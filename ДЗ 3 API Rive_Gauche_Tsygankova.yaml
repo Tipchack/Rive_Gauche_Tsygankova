@@ -1,0 +1,264 @@
+openapi: "3.0.0"
+info:
+  title: "Rive-Gauche API"
+  version: "0.0"
+  description: |
+    Документ содержит описание API сервиса Rive Gauche, использующегося в мобильных приложениях на платформах Android и iOS. 
+    Описанию подлежат все модели данных с полным набором полей, а также все методы, используемые для клиент-серверного взаимодействия.
+
+servers:
+- url: https://адрес-сервера
+  description: Test server
+
+security:
+  - authApiKey: []
+
+#############################################################################
+#...........................................................................
+# Пути
+#...........................................................................
+#############################################################################
+paths:
+
+  /login:
+    post:
+      security: []
+      summary: Авторизация/вход в приложение
+      description: За основу принят метод /auth, использованный в RENDEZVOUS
+      requestBody:
+        description: "Тело запроса"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        '200':
+          description: "Положительный ответ"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        '400':
+          description: |
+            * 102, 119, 120 - Неправильный логин/пароль;
+            * 104, 126 - Аккаунта не существует;
+            * 123 - Аккаунт заблокирован;
+            * 117 - Требуется обновление приложения.
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: integer
+                    example: 117
+
+  /viewCatalog/{section}/?limit=10&offset=1:
+    get:
+      security: []
+      summary: Просмотр каталога
+      description: Просмотр каталога
+      parameters:
+        - in: path
+          name: section
+          description: Секция для отображения (категория или бренд)
+          schema:
+            type: string
+          example: "category"
+          required: true    
+        - in: query
+          name: limit
+          description: Пачка пагинации
+          schema:
+            type: integer
+          example: 10
+          required: true
+        - in: query
+          name: offset
+          description: Сдвиг пачки пагинации
+          schema:          
+            type: integer
+          example: 1
+          required: true
+      responses:
+        '200':
+          description: "Положительный ответ"       
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/viewCatalog"
+        '500':
+          description: "Внутренняя ошибка сервера"  
+        '503':
+          description: "Внутренняя ошибка сервера"   
+        '404':
+          description: "Сервер не нашёл запрашиваемые данные"
+
+#############################################################################
+#...........................................................................
+# Компоненты
+#...........................................................................
+#############################################################################
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT 
+
+    authApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key 
+
+  schemas:
+
+   LoginRequest:
+      properties:
+        login:
+          description: Адрес электронной почты, номер телефона или номер карты
+          type: string
+          example: "79001234567"
+          nullable: false
+        pass:
+          description: Пароль
+          type: string
+          example: "qwerty123"
+          nullable: false
+
+   AuthResponse:
+      properties:
+        profile:
+          $ref: '#/components/schemas/Profile'
+        token: 
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5
+
+   Profile: 
+      allOf: 
+        - type: object
+          properties: 
+            id: 
+              $ref: "#/components/schemas/Id"
+            card: 
+              $ref: "#/components/schemas/ProfileCard"
+            city: 
+              $ref: "#/components/schemas/ProfileCity"
+        - $ref: "#/components/schemas/ProfileInfo"
+
+   Id: 
+      type: string
+      example: 123dff
+      nullable: false
+
+   ProfileCard: 
+      type: string
+      description: Скидочная карта
+      example: "47474747447474747322"
+
+   ProfileCity: 
+      type: string
+      example: "Воронеж"     
+
+   ProfileInfo: 
+      properties: 
+        first_name: 
+          type: string
+          example: "Иван"
+          nullable: false
+        last_name: 
+          type: string
+          example: "Иванов"
+          nullable: false
+        middle_name: 
+          type: string
+          example: "Иванович"
+        sex:
+          type: string
+          description: пол пользователя
+          example: "Мужчина"
+          nullable: false
+        birthday:
+          type: string
+          example: "1998-07-07"       
+        con_fb:
+          type: boolean
+          description: Привязка к facebook
+          example: true     
+        con_vk:
+          type: boolean
+          description: Привязка к ВК
+          example: true      
+        con_ok:
+          type: boolean
+          description: Привязка к Одноклассники
+          example: true           
+        con_ydx:
+          type: boolean
+          description: Привязка к Яндекс
+          example: true   
+        con_ggl:
+          type: boolean
+          description: Привязка к Google
+          example: true  
+        phone: 
+          type: string         
+          example: "89093932322"
+        email:
+          type: string
+          example: user@rive-gauche.ru                                                      
+        sms_news:
+          type: boolean
+          description: Подписка на смс-рассылку
+          example: true
+        email_news:
+          type: boolean
+          description: Подписка на рассылку по email
+          example: true
+
+   viewCatalog:
+      properties:
+        categories:
+          description: Список категорий
+          type: array
+          items: 
+            $ref: "#/components/schemas/category"
+        brands:
+          description: Список брендов
+          type: array
+          items: 
+            $ref: "#/components/schemas/brand"   
+                 
+   category:
+      properties:
+        categoryId:
+          type: integer
+          example: 123
+          nullable: false
+        categoryName:
+          type: string
+          example: "Парфюмерия"
+          nullable: false
+        categoryIcon:
+          description: Ссылка на иконку категории
+          $ref: "#/components/schemas/iconPath"        
+        categoryTextColor:
+          description: Цвет текста категории
+          type: string
+          example: "B30B00"     
+
+   brand:
+      properties:
+        brandId:
+          type: integer
+          example: 123
+          nullable: false
+        brandName:
+          type: string
+          example: "Clarins"
+          nullable: false
+
+   iconPath: 
+      type: string
+      example: path/image1

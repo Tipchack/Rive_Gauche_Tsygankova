@@ -56,14 +56,14 @@ paths:
     get:
       security: []
       summary: Просмотр каталога
-      description: Просмотр каталога
+      description: Просмотр каталога секция категории со списком категорий или секция бренды со списком брендов
       parameters:
         - in: path
           name: section
           description: Секция для отображения (категория или бренд)
           schema:
             type: string
-          example: "category"
+          example: "categories"
           required: true    
         - in: query
           name: limit
@@ -92,6 +92,105 @@ paths:
           description: "Внутренняя ошибка сервера"   
         '404':
           description: "Сервер не нашёл запрашиваемые данные"
+
+  /viewCatalog/categories/{category}/?limit=10&offset=1:
+    get:
+      security: []
+      summary: Просмотр категории каталога
+      description: Просмотр категории каталога, содержащей список подкатегорий
+      parameters:
+        - in: path
+          name: category
+          description: Выбранная категория
+          schema:
+            type: string
+          example: "makeup"
+          required: true    
+        - in: query
+          name: limit
+          description: Пачка пагинации
+          schema:
+            type: integer
+          example: 10
+          required: true
+        - in: query
+          name: offset
+          description: Сдвиг пачки пагинации
+          schema:          
+            type: integer
+          example: 1
+          required: true
+      responses:
+        '200':
+          description: "Положительный ответ"       
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/viewCategory"
+        '500':
+          description: "Внутренняя ошибка сервера"  
+        '503':
+          description: "Внутренняя ошибка сервера"   
+        '404':
+          description: "Сервер не нашёл запрашиваемые данные"
+
+  /viewCatalog/categories/{category}/{subcategory}/?limit=10&offset=1:
+    get:
+      security: []
+      summary: Просмотр списка товаров
+      description: Просмотр списка товаров
+      parameters:
+        - in: path
+          name: section
+          description: Секция для отображения (категория или бренд)
+          schema:
+            type: string
+          example: "categories"
+          required: true        
+        - in: path
+          name: category
+          description: Выбранная категория
+          schema:
+            type: string
+          example: "makeup"
+          required: true    
+        - in: path
+          name: subcategory
+          description: Выбранная подкатегория
+          schema:
+            type: string
+          example: "face"
+          required: true            
+        - in: query
+          name: limit
+          description: Пачка пагинации
+          schema:
+            type: integer
+          example: 10
+          required: true
+        - in: query
+          name: offset
+          description: Сдвиг пачки пагинации
+          schema:          
+            type: integer
+          example: 1
+          required: true
+      responses:
+        '200':
+          description: "Положительный ответ"       
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/viewProductlist"
+        '500':
+          description: "Внутренняя ошибка сервера"  
+        '503':
+          description: "Внутренняя ошибка сервера"   
+        '404':
+          description: "Сервер не нашёл запрашиваемые данные"    
+
+  /viewCatalog/brands/{brand}/?limit=10&offset=1:
+     $ref: '#/paths/~1viewCatalog~1categories~1%7Bcategory%7D~1%7Bsubcategory%7D~1?limit=10&offset=1'           
 
 #############################################################################
 #...........................................................................
@@ -229,6 +328,14 @@ components:
           type: array
           items: 
             $ref: "#/components/schemas/brand"   
+
+   viewCategory:
+      properties:
+        categories:
+          description: Список подкатегорий
+          type: array
+          items: 
+            $ref: "#/components/schemas/category"
                  
    category:
       properties:
@@ -262,3 +369,58 @@ components:
    iconPath: 
       type: string
       example: path/image1
+
+   viewProductlist:
+      properties:
+        products:
+          description: Список товаров
+          type: array
+          items: 
+            $ref: "#/components/schemas/product"
+
+   product:
+      properties:
+        productId:
+          type: integer
+          example: 123
+          nullable: false
+        productName:
+          type: string         
+          example: "Missha B.B Boomer"
+          nullable: false
+        productDesc:
+          type: string
+          description: Описание товара
+          example: "Праймер для лица"
+          nullable: false          
+        productPhoto:
+          description: Ссылка на фото товара
+          $ref: "#/components/schemas/iconPath"        
+        productPrice:
+          type: integer
+          example: 1674 
+          nullable: false          
+        productPriceOld:
+          type: integer
+          description: Цена до скидки
+          example: 2674     
+        productNew:
+          type: boolean
+          description: Товар новый
+          example: true    
+        productDiscount:
+          type: boolean
+          description: Товар со скидкой
+          example: true                          
+        productGift:
+          type: boolean
+          description: Товар с подарком
+          example: true  
+        productInFav:
+          type: boolean
+          description: Товар в избранном
+          example: true            
+        productInCart:
+          type: boolean
+          description: Товар в корзине
+          example: true    

@@ -189,8 +189,8 @@ paths:
         '404':
           description: "Сервер не нашёл запрашиваемые данные"    
 
-  # /viewCatalog/brands/{brand}/?limit=10&offset=1:
-  #   $ref: '#/paths~1viewCatalog~1categories~1%7Bcategory%7D~1%7Bsubcategory%7D~1?limit=10&offset=1'           
+  /viewCatalog/brands/{brand}/?limit=10&offset=1:
+     $ref: '#/paths/~1viewCatalog~1categories~1%7Bcategory%7D~1%7Bsubcategory%7D~1?limit=10&offset=1'           
 
 #############################################################################
 #...........................................................................
